@@ -1,7 +1,6 @@
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
-const { runExecutable, extractBestMove } = require("./engine");
 require("dotenv").config();
 
 const activeSockets = new Map();
@@ -75,25 +74,6 @@ io.on("connection", (socket) => {
             socket.emit("room-created", { roomId, userId: socket.id }); 
         }
     });
-
-    socket.on("get-best-move", async (data) => {
-        const { position, depth } = data;
-
-        let bestMove = null;
-        try {
-            let tryCount = 0;
-            while(!bestMove && tryCount < 4)
-            {
-                const result = await runExecutable(position, depth);  // Run the executable
-                bestMove = extractBestMove(result);  // Extract the best move from the output
-                tryCount++;
-            }
-        } catch (error) {
-            console.error('Error running executable:', error);
-        }
-
-        socket.emit("best-move", { bestMove });
-    }); 
 
     socket.on("join-room", data => {
         const { roomId, userId } = data.roomId;
